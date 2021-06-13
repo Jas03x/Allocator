@@ -1,7 +1,9 @@
 
 #include <cstdio>
 
-int main(int argc, char* argv[])
+#include <Windows.h>
+
+INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nCmdShow)
 {
-	return 0;
+    return 0;
 }
