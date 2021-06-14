@@ -3,6 +3,8 @@
 
 #include <Windows.h>
 
+LRESULT WINAPI WndProc(_In_ HWND hWnd, _In_ UINT Msg, _In_ WPARAM wParam, _In_ LPARAM lParam);
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
     int status = 0;
@@ -12,7 +14,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
     WNDCLASSEX wc;
     wc.cbSize = sizeof(WNDCLASSEX);
     wc.style = 0;
-    wc.lpfnWndProc = DefWindowProc;
+    wc.lpfnWndProc = WndProc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInstance;
@@ -33,7 +35,41 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
     ShowWindow(hWnd, SW_SHOW);
 
-    while (true);
+    MSG msg = {};
+    while(true)
+    {
+        BOOL ret = GetMessage(&msg, nullptr, 0, 0);
+
+        if (ret > 0)
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        else
+        {
+            ret = (status == 0) ? msg.wParam : -1;
+            if(ret != 0)
+            {
+                printf("an error occured in the event loop\n");
+            }
+
+            break;
+        }
+    }
 
     return status;
+}
+
+LRESULT WINAPI WndProc(_In_ HWND hWnd, _In_ UINT msg, _In_ WPARAM wParam, _In_ LPARAM lParam)
+{
+    switch (msg)
+    {
+        case WM_CLOSE:
+        {
+            PostQuitMessage(0);
+            break;
+        }
+    }
+
+    return DefWindowProc(hWnd, msg, wParam, lParam);
 }
