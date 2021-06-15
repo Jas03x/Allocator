@@ -85,14 +85,13 @@ bool InitResources()
 
 		g_TextureArray = new Texture* [g_NumTextures];
 
-		typedef uint8_t(*PTEXTURE);
 		std::vector<uint8_t> vTextureBuffer(g_TextureSize * g_TextureSize * g_PixelSize);
 
 		std::srand(std::time(nullptr));
 
 		for (unsigned int i = 0; i < g_NumTextures; i++)
 		{
-			for (size_t j = 0; j < g_TextureSize * g_TextureSize * g_PixelSize; j += 4)
+			for (size_t j = 0; j < vTextureBuffer.size(); j += g_PixelSize)
 			{
 				vTextureBuffer[j + 0] = std::rand() % 256;
 				vTextureBuffer[j + 1] = std::rand() % 256;
