@@ -13,6 +13,8 @@
 
 #include <gk/3d/renderer/frame_renderer.hpp>
 
+#include <windows.h>
+
 const size_t KB = 1024;
 const size_t MB = 1024 * KB;
 const size_t GB = 1024 * MB;
@@ -91,11 +93,14 @@ bool InitResources()
 
 		for (unsigned int i = 0; i < g_NumTextures; i++)
 		{
+			float r = std::rand() % 256;
+			float g = std::rand() % 256;
+			float b = std::rand() % 256;
 			for (size_t j = 0; j < vTextureBuffer.size(); j += g_PixelSize)
 			{
-				vTextureBuffer[j + 0] = std::rand() % 256;
-				vTextureBuffer[j + 1] = std::rand() % 256;
-				vTextureBuffer[j + 2] = std::rand() % 256;
+				vTextureBuffer[j + 0] = r;
+				vTextureBuffer[j + 1] = g;
+				vTextureBuffer[j + 2] = b;
 				vTextureBuffer[j + 3] = 1;
 			}
 
@@ -170,6 +175,8 @@ void Run()
 		g_FrameIndex = (g_FrameIndex + 1) % g_NumTextures;
 
 		g_Context->Update();
+
+		Sleep(1000);
 	}
 }
 
