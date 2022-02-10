@@ -22,6 +22,8 @@ const size_t GB = 1024 * MB;
 const unsigned int WIDTH  = 512;
 const unsigned int HEIGHT = 512;
 
+const unsigned int g_ChunkSize = 64;
+
 const size_t g_TextureSize = 4096;
 const size_t g_PixelSize = 4;
 size_t g_NumTextures = 0;
@@ -91,17 +93,31 @@ bool InitResources()
 
 		std::srand(std::time(nullptr));
 
-		for (unsigned int i = 0; i < g_NumTextures; i++)
+		unsigned int step_size = g_TextureSize / g_ChunkSize;
+
+		for (uint64_t i = 0; i < g_NumTextures; i++)
 		{
-			float r = std::rand() % 256;
-			float g = std::rand() % 256;
-			float b = std::rand() % 256;
-			for (size_t j = 0; j < vTextureBuffer.size(); j += g_PixelSize)
+			for (uint64_t cx = 0; cx < step_size; cx++)
 			{
-				vTextureBuffer[j + 0] = r;
-				vTextureBuffer[j + 1] = g;
-				vTextureBuffer[j + 2] = b;
-				vTextureBuffer[j + 3] = 1;
+				for (uint64_t cy = 0; cy < step_size; cy++)
+				{
+					uint8_t r = std::rand() % 256;
+					uint8_t g = std::rand() % 256;
+					uint8_t b = std::rand() % 256;
+
+					for (uint64_t px = 0; px < g_ChunkSize; px++)
+					{
+						for (uint64_t py = 0; py < g_ChunkSize; py++)
+						{
+							// printf("OFFSET: %u\n", (cx * g_ChunkSize + (cy + py * g_ChunkSize) * g_TextureSize + px) * g_PixelSize);
+							uint8_t* pixel = &vTextureBuffer[(cx * g_ChunkSize + (py + cy * g_ChunkSize) * g_TextureSize + px) * g_PixelSize];
+							pixel[0] = r;
+							pixel[1] = g;
+							pixel[2] = b;
+							pixel[3] = 1;
+						}
+					}
+				}
 			}
 
 			g_TextureArray[i] = new Texture(GFX_RGBA, g_TextureSize, g_TextureSize, GFX_TYPE_UNSIGNED_BYTE, vTextureBuffer.data(), GFX_LINEAR, GFX_CLAMP_TO_EDGE);
@@ -175,8 +191,6 @@ void Run()
 		g_FrameIndex = (g_FrameIndex + 1) % g_NumTextures;
 
 		g_Context->Update();
-
-		Sleep(1000);
 	}
 }
 
