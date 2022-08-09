@@ -25,7 +25,7 @@ const unsigned int HEIGHT = 512;
 const unsigned int g_ChunkSize = 64;
 
 const size_t g_TextureSize = 4096;
-const size_t g_PixelSize = 4;
+const size_t g_PixelSize = 8;
 size_t g_NumTextures = 0;
 
 size_t g_SizeOfAllocations = 0;
@@ -84,12 +84,22 @@ bool InitResources()
 
 	if (status)
 	{
+		if ((g_SizeOfAllocations * GB) % (g_TextureSize * g_TextureSize * g_PixelSize) != 0)
+		{
+			printf("warning: allocation size not divisible by texture size\n");
+		}
+
+		if (g_TextureSize % g_ChunkSize != 0)
+		{
+			printf("warning: texture size not divisible by chunk size\n");
+		}
+
 		g_NumTextures = (g_SizeOfAllocations * GB) / (g_TextureSize * g_TextureSize * g_PixelSize);
 		printf("number of textures = %llu\n", g_NumTextures);
 
 		g_TextureArray = new Texture* [g_NumTextures];
 
-		std::vector<uint8_t> vTextureBuffer(g_TextureSize * g_TextureSize * g_PixelSize);
+		std::vector<uint16_t> vTextureBuffer(g_TextureSize * g_TextureSize * (g_PixelSize / 2));
 
 		std::srand(std::time(nullptr));
 
@@ -101,26 +111,26 @@ bool InitResources()
 			{
 				for (uint64_t cy = 0; cy < step_size; cy++)
 				{
-					uint8_t r = std::rand() % 256;
-					uint8_t g = std::rand() % 256;
-					uint8_t b = std::rand() % 256;
+					uint16_t r = std::rand() % SHRT_MAX;
+					uint16_t g = std::rand() % SHRT_MAX;
+					uint16_t b = std::rand() % SHRT_MAX;
 
 					for (uint64_t px = 0; px < g_ChunkSize; px++)
 					{
 						for (uint64_t py = 0; py < g_ChunkSize; py++)
 						{
 							// printf("OFFSET: %u\n", (cx * g_ChunkSize + (cy + py * g_ChunkSize) * g_TextureSize + px) * g_PixelSize);
-							uint8_t* pixel = &vTextureBuffer[(cx * g_ChunkSize + (py + cy * g_ChunkSize) * g_TextureSize + px) * g_PixelSize];
+							uint16_t* pixel = &vTextureBuffer[(cx * g_ChunkSize + (py + cy * g_ChunkSize) * g_TextureSize + px) * (g_PixelSize / 2)];
 							pixel[0] = r;
 							pixel[1] = g;
 							pixel[2] = b;
-							pixel[3] = 1;
+							pixel[3] = SHRT_MAX;
 						}
 					}
 				}
 			}
 
-			g_TextureArray[i] = new Texture(GFX_RGBA, g_TextureSize, g_TextureSize, GFX_TYPE_UNSIGNED_BYTE, vTextureBuffer.data(), GFX_LINEAR, GFX_CLAMP_TO_EDGE);
+			g_TextureArray[i] = new Texture(GFX_RGBA, g_TextureSize, g_TextureSize, GFX_TYPE_SHORT, vTextureBuffer.data(), GFX_LINEAR, GFX_CLAMP_TO_EDGE);
 		}
 	}
 
